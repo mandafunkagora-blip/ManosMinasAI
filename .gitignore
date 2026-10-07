@@ -1,0 +1,42 @@
+﻿# Segredos e ambientes
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+client_secret*.json
+
+# Ambientes Python
+.venv/
+venv/
+standalone-env/
+
+# Dependencias/cache
+__pycache__/
+*.pyc
+node_modules/
+
+# IA/modelos
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.bin
+
+# Saidas e temporarios
+logs/
+temp/
+outputs/
+input/
+.cache/
+
+# Backups do projeto
+*.backup
+*.backup.*
+*.backup-*
+
+# Videos duplicados - manter somente assets/videos
+ManosMinasAI_Abertura_v2/fundo.mp4
+ManosMinasAI_Abertura_v2/Bem vindo.mp4
+ManosMinasAI_Abertura_v2/PAPEL DE PAREDE.mp4

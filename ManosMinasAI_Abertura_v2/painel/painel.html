@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MANOS E MINAS AI — Painel</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05050a;color:#fff;font-family:Georgia,"Times New Roman",serif}
+body{position:relative}
+#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-5;background:#05050a}
+#veil{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.42));z-index:-4}
+#rgbWash{position:fixed;inset:0;z-index:-3;pointer-events:none;opacity:.12;background:linear-gradient(120deg,#ff0080,#00eaff,#7cff00,#ffe600,#8a2be2,#ff0080);background-size:500% 500%;animation:rainbow 16s ease-in-out infinite}
+@keyframes rainbow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+.top{height:190px;width:100%;display:flex;align-items:flex-start;padding:24px 42px 12px;gap:58px;position:relative;z-index:5}
+.profileWrap{position:relative;width:154px;height:154px;flex:0 0 154px;margin-left:4px}
+.profile{position:absolute;inset:18px;border-radius:50%;overflow:hidden;background:radial-gradient(circle,#fff 0 3%,#9a6cff 25%,#171021 72%);border:3px solid rgba(255,255,255,.95);box-shadow:0 0 12px #fff,0 0 28px #00eaff,0 0 48px #ff00d4,0 0 72px #ffd400}
+.profile img{width:100%;height:100%;display:none;object-fit:cover;object-position:center}
+.profile.has img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.profileRing{position:absolute;inset:0;border-radius:50%;border:5px solid transparent;background:linear-gradient(#0000,#0000) padding-box,conic-gradient(#ff0080,#ffdd00,#00eaff,#75ff00,#9b5cff,#ff0080) border-box;animation:spin 6s linear infinite;filter:drop-shadow(0 0 10px #fff)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sun{position:absolute;inset:-38px;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,225,80,.95) 0 2deg,transparent 2deg 7deg);filter:drop-shadow(0 0 5px #ffd84d);opacity:.9;animation:sunSpin 7s linear infinite,sunPulse 2.8s ease-in-out infinite}
+@keyframes sunSpin{to{transform:rotate(360deg)}}
+@keyframes sunPulse{50%{transform:scale(1.06);opacity:1}}
+.upload{position:absolute;right:-3px;bottom:-3px;width:34px;height:34px;border-radius:50%;border:1px solid #fff;background:#111;color:#fff;cursor:pointer;box-shadow:0 0 12px #00eaff;z-index:4}
+#photo{display:none}
+
+.nameArea{min-width:390px;max-width:430px;padding-top:16px;position:relative;z-index:8}
+.nameLabel{font-size:11px;letter-spacing:.18em;opacity:.75;margin-bottom:6px}
+#username{width:390px;max-width:100%;height:58px;padding:0 18px;border-radius:12px;border:2px solid rgba(255,210,80,.9);background:rgba(0,0,0,.18);color:#ffe79a;font-family:Georgia,"Times New Roman",serif;font-size:23px;font-weight:700;letter-spacing:.035em;text-shadow:0 0 4px #fff,0 0 9px #ffd45c,0 0 18px #ff9d00;outline:none;box-shadow:inset 0 0 14px rgba(255,180,0,.06),0 0 10px rgba(255,220,90,.55),0 0 24px rgba(255,160,0,.28);animation:nameLed 1.7s ease-in-out infinite}
+#username::placeholder{color:rgba(255,225,150,.72)}
+@keyframes nameLed{0%,100%{border-color:#ffd95a;box-shadow:inset 0 0 14px rgba(255,180,0,.06),0 0 8px #ffd95a,0 0 20px rgba(255,150,0,.22)}50%{border-color:#fff1a8;box-shadow:inset 0 0 14px rgba(255,220,80,.10),0 0 15px #fff1a8,0 0 34px rgba(255,150,0,.42)}}
+#nameCount{font-size:10px;text-align:right;margin-top:4px;color:#ffe28a;opacity:.7}
+
+.space{flex:1}
+
+.toolbar{position:fixed;z-index:10;left:24px;right:24px;bottom:24px;height:76px;border-radius:18px;border:1px solid rgba(255,255,255,.8);background:linear-gradient(180deg,rgba(235,240,248,.92),rgba(92,99,111,.90) 46%,rgba(28,32,40,.94));box-shadow:0 0 20px rgba(255,255,255,.2),inset 0 2px 0 rgba(255,255,255,.9),inset 0 -3px 12px rgba(0,0,0,.5);display:flex;align-items:center;padding:10px 14px;gap:10px;overflow:hidden}
+.tool{height:52px;min-width:112px;padding:0 18px;border:1px solid rgba(255,255,255,.75);border-radius:12px;background:linear-gradient(180deg,#f7f9fc,#7e8793 52%,#343a44);color:#10131a;font-weight:900;letter-spacing:.05em;cursor:pointer;box-shadow:inset 0 1px 0 #fff,0 3px 8px #111;white-space:nowrap}
+.tool:hover{transform:translateY(-2px);box-shadow:0 0 14px #00eaff,inset 0 1px 0 #fff,0 4px 9px #111}
+.tool.active{outline:2px solid #00eaff;box-shadow:0 0 18px #00eaff,inset 0 1px 0 #fff}
+.tool.spacer{visibility:hidden;pointer-events:none;flex:1}
+
+.notes{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.note{position:absolute;top:-50px;font-size:25px;font-weight:bold;animation:fall linear forwards;text-shadow:0 0 5px currentColor,0 0 16px currentColor,0 0 30px currentColor}
+@keyframes fall{to{transform:translateY(115vh) rotate(360deg)}}
+
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(7px);align-items:center;justify-content:center;z-index:20}
+.modal.open{display:flex}
+.window{width:min(900px,92vw);height:min(650px,82vh);border:2px solid transparent;border-radius:20px;background:linear-gradient(rgba(13,11,22,.96),rgba(20,14,31,.96)) padding-box,linear-gradient(135deg,#ff00a8,#00eaff,#ffe600,#8c52ff,#ff00a8) border-box;box-shadow:0 0 35px #ff00b7,0 0 70px rgba(0,234,255,.35);display:flex;flex-direction:column;overflow:hidden}
+.windowHead{height:62px;display:flex;align-items:center;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.22);background:linear-gradient(90deg,rgba(255,0,170,.2),rgba(0,234,255,.14),rgba(255,220,0,.13))}
+.windowTitle{font-family:Georgia,serif;font-size:22px;font-weight:900;text-shadow:0 0 10px #fff}
+.close{margin-left:auto;width:38px;height:38px;border-radius:10px;border:1px solid #fff;background:#25051f;color:#fff;font-size:22px;cursor:pointer}
+.body{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+.box{display:flex;flex-direction:column;gap:8px;min-height:0}
+.box label{font-weight:900;color:#ffd7f4;letter-spacing:.08em}
+textarea{width:100%;min-height:150px;resize:none;border-radius:12px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.48);color:#fff;padding:14px;font-size:15px;outline:none;box-shadow:inset 0 0 15px rgba(0,0,0,.5)}
+#lyrics{flex:1;min-height:300px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;padding:0 20px 20px}
+.action{height:44px;border:1px solid #fff;border-radius:10px;padding:0 16px;background:linear-gradient(180deg,#fafafa,#9aa1aa);font-weight:900;cursor:pointer}
+.action.generate{background:linear-gradient(90deg,#ff00a8,#8c52ff,#00eaff);color:#fff;text-shadow:0 1px 3px #000}
+.action.danger{background:linear-gradient(180deg,#ff7777,#a00000);color:#fff}
+.hint{font-size:12px;opacity:.7}
+
+@media(max-width:800px){
+ .top{padding-left:20px}.profileWrap{width:86px;height:86px;flex-basis:86px}.nameArea{max-width:260px}
+ .body{grid-template-columns:1fr}.window{height:88vh}.toolbar{left:10px;right:10px}
+}
+</style>
+<style id="MM_VIDEO_FIX_FINAL">#bg{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;object-fit:cover!important;object-position:center center!important;background:#000!important;z-index:0!important;display:block!important}</style><style id="MM_RAP_FONT">body,body *{font-family:Garamond,"Times New Roman",serif!important;}</style><script src=manos-minas-api.js></script></head>
+<body>
+<video id="bg" autoplay muted loop playsinline preload="auto"></video>
+<div id="veil"></div><div id="rgbWash"></div>
+<div class="notes" id="notes"></div>
+
+<div class="top">
+  <div class="profileWrap">
+    <div class="sun"></div><div class="profileRing"></div>
+    <div class="profile" id="profile"><img id="avatar"></div>
+    <button class="upload" id="uploadBtn" title="Colocar foto">＋</button>
+    <input id="photo" type="file" accept="image/*">
+  </div>
+  <div class="nameArea">
+    <div class="nameLabel">NOME DO USUÁRIO — MÁXIMO 14 CARACTERES</div>
+    <input id="username" maxlength="14" placeholder="SEU NOME">
+    <div id="nameCount">0 / 14</div>
+  </div>
+  <div class="space"></div>
+</div>
+
+<nav class="toolbar" aria-label="Ferramentas">
+  <button class="tool active" data-tool="inicio">INÍCIO</button>
+  <button class="tool" id="lyricsBtn">GERADOR DE LETRA</button>
+  <button class="tool">GERAR MÚSICA</button>
+  <button class="tool">INSTRUMENTAL</button>
+  <button class="tool">VOCAL</button>
+  <button class="tool">PROJETOS</button>
+  <button class="tool spacer" aria-hidden="true"></button>
+</nav>
+
+<div class="modal" id="lyricsModal">
+  <section class="window">
+    <header class="windowHead"><div class="windowTitle">GERADOR DE LETRA</div><button class="close" id="closeLyrics">×</button></header>
+    <div class="body">
+      <div class="box">
+        <label for="request">O QUE VOCÊ QUER NA LETRA?</label>
+        <textarea id="request" placeholder="Ex.: Uma música romântica, brasileira, com refrão forte..."></textarea>
+        <div class="hint">Digite o tema, estilo, sentimento ou ideia.</div>
+      </div>
+      <div class="box">
+        <label for="lyrics">LETRA GERADA</label>
+        <textarea id="lyrics" placeholder="A letra gerada aparecerá aqui..."></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="action generate" id="generate">GERAR LETRA</button>
+      <button class="action" id="copy">📄 COPIAR</button>
+      <button class="action" id="save">💾 SALVAR</button>
+      <button class="action danger" id="clear">🗑 APAGAR TUDO</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const bg=document.getElementById('bg');
+// O vídeo de fundo é definido pelo arquivo local da pasta do painel.
+bg.src = '/assets/videos/fundo.mp4';
+bg.volume = 0;
+bg.muted = true;
+bg.play().catch(()=>{});
+bg.addEventListener('canplay',()=>bg.play().catch(()=>{}));
+
+const profile=document.getElementById('profile'), avatar=document.getElementById('avatar');
+document.getElementById('uploadBtn').onclick=()=>document.getElementById('photo').click();
+document.getElementById('photo').onchange=e=>{
+ const f=e.target.files[0]; if(!f)return;
+ const u=URL.createObjectURL(f); avatar.src=u; profile.classList.add('has');
+};
+const username=document.getElementById('username'), count=document.getElementById('nameCount');
+username.addEventListener('input',()=>count.textContent=username.value.length+' / 14');
+
+const notes=['♪','♫','♬','𝄞','♩','🎹','🎵','🎶'];
+function spawnNote(){
+ const n=document.createElement('span'); n.className='note'; n.textContent=notes[Math.floor(Math.random()*notes.length)];
+ n.style.left=Math.random()*100+'vw'; n.style.top=(-20-Math.random()*160)+'px'; n.style.color=`hsl(${Math.random()*360} 100% 65%)`;
+ n.style.animationDuration=(5+Math.random()*7)+'s'; n.style.animationDelay=(Math.random()*1.5)+'s'; n.style.fontSize=(20+Math.random()*25)+'px';
+ document.getElementById('notes').appendChild(n); setTimeout(()=>n.remove(),11000);
+}
+setInterval(spawnNote,220); for(let i=0;i<34;i++)setTimeout(spawnNote,i*90);
+
+document.querySelectorAll('.tool:not(.spacer)').forEach(b=>b.addEventListener('click',()=>{
+ document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+}));
+
+const modal=document.getElementById('lyricsModal');
+document.getElementById('lyricsBtn').onclick=()=>modal.classList.add('open');
+document.getElementById('closeLyrics').onclick=()=>modal.classList.remove('open');
+modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('open')});
+
+document.getElementById('generate').onclick=()=>{
+ const req=document.getElementById('request').value.trim();
+ if(!req){document.getElementById('request').focus();return}
+ document.getElementById('lyrics').value =
+ `[VERSO 1]\n${req}\n\n[PRÉ-REFRÃO]\nUma ideia começa a nascer,\nganhando força para acontecer.\n\n[REFRÃO]\nManos e Minas, deixa acontecer,\numa nova história pronta para viver.\n\n[VERSO 2]\nCada palavra encontra seu lugar,\ne a música começa a se formar.`;
+};
+document.getElementById('copy').onclick=async()=>{
+ const l=document.getElementById('lyrics'); if(!l.value)return;
+ await navigator.clipboard.writeText(l.value); alert('Letra copiada.');
+};
+document.getElementById('clear').onclick=()=>{document.getElementById('request').value='';document.getElementById('lyrics').value=''};
+document.getElementById('save').onclick=()=>{
+ const text=document.getElementById('lyrics').value;if(!text)return;
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));a.download='letra-manos-e-minas.txt';a.click();
+};
+</script>
+<script id="MM_VIDEO_PLAY_FINAL">try{bg.autoplay=true;bg.muted=true;bg.loop=true;bg.playsInline=true;bg.controls=false;bg.preload="auto";bg.setAttribute("autoplay","");bg.setAttribute("muted","");bg.setAttribute("playsinline","");bg.setAttribute("loop","");bg.setAttribute("preload","auto");bg.addEventListener("loadeddata",function(){bg.play().catch(function(){});});bg.play().catch(function(){});}catch(e){}</script><script>
+(function(){
+const btn=document.getElementById('generate');
+if(!btn)return;
+btn.addEventListener('click',async function(e){
+e.preventDefault();
+const request=document.getElementById('request'),lyrics=document.getElementById('lyrics');
+if(!request||!lyrics)return;
+const texto=request.value.trim();
+if(!texto){alert('Digite o que você quer na letra.');return;}
+btn.disabled=true;btn.textContent='GERANDO...';lyrics.value='Criando sua letra...';
+try{
+const r=await fetch('https://manos-minas-ai-api.onrender.com/api/lyrics/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tema:texto,estilo:'livre',clima:'livre',idioma:'português',estrutura:'verso, pré-refrão, refrão, ponte'})});
+const data=await r.json();
+if(!r.ok)throw new Error(data.detail||'Erro ao gerar letra.');
+lyrics.value=data.lyrics||'Nenhuma letra foi retornada.';
+}catch(err){console.error(err);lyrics.value='';alert('Não foi possível gerar a letra: '+err.message);}
+finally{btn.disabled=false;btn.textContent='GERAR LETRA';}
+});
+})();
+</script></body>
+</html>

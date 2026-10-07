@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MANOS E MINAS AI</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030308;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{position:relative}
+video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover}
+#introVideo{z-index:0}
+#introShade{position:fixed;inset:0;z-index:1;background:radial-gradient(circle at center,rgba(0,0,0,.08),rgba(0,0,0,.62))}
+#storm{position:fixed;inset:0;z-index:2;pointer-events:none}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;z-index:3;pointer-events:none;transition:opacity .08s}
+#intro{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;transition:opacity 1.2s ease,transform 1.2s ease,filter 1.2s ease}
+.brand{font-weight:1000;letter-spacing:.12em;text-align:center;font-size:clamp(42px,7vw,100px);text-shadow:0 0 8px #fff,0 0 24px #00eaff,0 0 55px #ff00d4,0 0 90px #ffd400}
+.progress{position:absolute;bottom:12%;width:min(430px,70vw);height:4px;background:rgba(255,255,255,.15);border-radius:20px;overflow:hidden;box-shadow:0 0 12px rgba(255,255,255,.25)}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff00a8,#ffe600,#00eaff);animation:load 10s linear forwards}
+@keyframes load{to{width:100%}}
+#login{position:fixed;inset:0;z-index:10;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;transition:opacity .8s ease}
+#loginVideo{z-index:-2}
+#loginShade{position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:-1}
+.loginBox{width:min(520px,88vw);padding:42px 34px;border:1px solid rgba(255,255,255,.8);border-radius:24px;background:rgba(0,0,0,.38);backdrop-filter:blur(8px);box-shadow:0 0 35px #00eaff,0 0 70px rgba(255,0,180,.35);text-align:center}
+.loginBrand{font-size:clamp(30px,5vw,58px);font-weight:1000;letter-spacing:.08em;text-shadow:0 0 8px #fff,0 0 24px #00eaff,0 0 45px #ff00d4}
+.loginSub{margin:14px 0 28px;font-weight:800;letter-spacing:.18em}
+#googleLoginBtn{width:100%;height:58px;border:1px solid #fff;border-radius:14px;background:linear-gradient(90deg,#ff00a8,#8c52ff,#00eaff);color:#fff;font-weight:1000;font-size:17px;letter-spacing:.08em;cursor:pointer;box-shadow:0 0 18px rgba(0,234,255,.55)}
+#googleLoginBtn:hover{transform:translateY(-2px);filter:brightness(1.12)}
+.clock{position:absolute;top:28px;right:34px;text-align:right;text-shadow:0 0 10px #00eaff}
+#time{font-size:22px;font-weight:900}
+#date{font-size:12px;opacity:.8;margin-top:4px}
+</style>
+<script src=https://accounts.google.com/gsi/client async defer></script>
+<body>
+<video id="introVideo" autoplay muted playsinline preload="auto">
+  <source src="assets/videos/Bem%20vindo.mp4" type="video/mp4">
+</video>
+<div id="introShade"></div>
+<canvas id="storm"></canvas>
+<div id="flash"></div>
+
+<section id="intro">
+  <div class="brand">MANOS E MINAS AI</div>
+  <div class="progress"><i></i></div>
+</section>
+
+<section id="login">
+  <video id="loginVideo" autoplay muted loop playsinline preload="auto">
+    <source src="assets/videos/PAPEL%20DE%20PAREDE.mp4" type="video/mp4">
+  </video>
+  <div id="loginShade"></div>
+  <div class="clock"><div id="time">--:--:--</div><div id="date">--/--/----</div></div>
+  <div class="loginBox">
+    <div class="loginBrand">MANOS E MINAS AI</div>
+    <div class="loginSub">ENTRE PARA COMEÇAR A CRIAR</div>
+    <button id="googleLoginBtn" type="button">ENTRAR COM GOOGLE</button><script>const MM_GOOGLE_CLIENT_ID='971139851104-nbc8c854pcpc1c5d8hgu6p02t4vmq3v9.apps.googleusercontent.com';function mmGoogleCallback(response){if(!response||!response.credential){alert('Google nao retornou a credencial.');return;}fetch('https://manos-minas-ai-api.onrender.com/api/auth/google',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({credential:response.credential})}).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data.detail||'Falha no login Google.');sessionStorage.setItem('mm_google_user',JSON.stringify(data));window.location.href='painel/painel.html';}).catch(e=>{console.error(e);alert('Login Google nao concluido: '+e.message);});}document.addEventListener('DOMContentLoaded',function(){const btn=document.getElementById('googleLoginBtn');if(!btn)return;btn.addEventListener('click',function(){if(!window.google||!google.accounts||!google.accounts.id){alert('Google ainda esta carregando. Atualize a pagina e tente novamente.');return;}google.accounts.id.initialize({client_id:MM_GOOGLE_CLIENT_ID,callback:mmGoogleCallback,auto_select:false,cancel_on_tap_outside:true});google.accounts.id.prompt();});});</script>
+  </div>
+</section>
+
+<script>
+const intro=document.getElementById('intro');
+const login=document.getElementById('login');
+const introVideo=document.getElementById('introVideo');
+const loginVideo=document.getElementById('loginVideo');
+
+function play(v){v.muted=true;v.play().catch(()=>{});}
+play(introVideo); play(loginVideo);
+
+function clock(){
+ const d=new Date();
+ document.getElementById('time').textContent=d.toLocaleTimeString('pt-BR');
+ document.getElementById('date').textContent=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+}
+clock(); setInterval(clock,1000);
+
+const c=document.getElementById('storm'),ctx=c.getContext('2d');
+let W=0,H=0,drops=[];
+function resize(){
+ W=innerWidth;H=innerHeight;const d=Math.min(devicePixelRatio||1,2);
+ c.width=W*d;c.height=H*d;c.style.width=W+'px';c.style.height=H+'px';ctx.setTransform(d,0,0,d,0,0);
+ drops=[];
+ for(let i=0;i<Math.min(420,Math.floor(W*H/2600));i++)
+   drops.push({x:Math.random()*W,y:Math.random()*H,l:8+Math.random()*24,s:9+Math.random()*20,a:.08+Math.random()*.25});
+}
+addEventListener('resize',resize);resize();
+function rain(){
+ ctx.clearRect(0,0,W,H);ctx.strokeStyle='rgba(190,220,255,.2)';ctx.lineWidth=1;
+ for(const p of drops){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-2,p.y+p.l);ctx.stroke();p.y+=p.s;if(p.y>H+30){p.y=-30;p.x=Math.random()*W}}
+ requestAnimationFrame(rain);
+}
+rain();
+
+function goLogin(){
+ intro.style.opacity='0';intro.style.transform='scale(1.04)';intro.style.filter='blur(6px)';
+ setTimeout(()=>{intro.style.display='none';login.style.opacity='1';login.style.pointerEvents='auto';play(loginVideo)},1100);
+}
+setTimeout(goLogin,10000);
+
+</script>
+<!-- MANOS E MINAS AI - GERAR IMAGEM -->
+<div id="mmImageModal" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.90);align-items:center;justify-content:center;font-family:Arial,sans-serif;">
+  <div style="width:min(850px,94vw);max-height:92vh;overflow:auto;background:#101018;border:1px solid rgba(255,255,255,.20);border-radius:22px;padding:25px;color:#fff;box-shadow:0 0 60px rgba(170,0,255,.40);">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-size:12px;letter-spacing:4px;opacity:.60;">MANOS E MINAS AI</div>
+        <h2 style="margin:5px 0;font-size:30px;">GERAR IMAGEM</h2>
+      </div>
+
+      <button onclick="mmCloseImage()" style="width:42px;height:42px;border:0;border-radius:50%;background:#222;color:#fff;font-size:24px;cursor:pointer;">Ã—</button>
+    </div>
+
+    <div style="background:#181824;border-radius:14px;padding:14px 18px;margin-bottom:18px;display:flex;justify-content:space-between;">
+      <span>Seus crÃ©ditos</span>
+      <strong id="mmCredits" style="font-size:22px;">100</strong>
+    </div>
+
+    <label style="display:block;margin-bottom:8px;font-weight:bold;">Descreva a imagem</label>
+
+    <textarea
+      id="mmImagePrompt"
+      placeholder="Descreva a imagem que vocÃª quer criar..."
+      style="width:100%;height:140px;box-sizing:border-box;background:#08080d;color:#fff;border:1px solid #333;border-radius:14px;padding:15px;font-size:16px;resize:vertical;"
+    ></textarea>
+
+    <div style="display:flex;gap:12px;align-items:center;margin-top:15px;flex-wrap:wrap;">
+
+      <select id="mmImageStyle" style="background:#181824;color:#fff;border:1px solid #333;border-radius:10px;padding:12px;">
+        <option value="realista">Realista</option>
+        <option value="cinematografico">CinematogrÃ¡fico</option>
+        <option value="anime">Anime</option>
+        <option value="3d">3D</option>
+        <option value="fantasia">Fantasia</option>
+        <option value="arte_digital">Arte digital</option>
+      </select>
+
+      <span style="opacity:.7;">
+        Custo: <strong>10 crÃ©ditos</strong>
+      </span>
+
+      <button
+        id="mmGenerateImageBtn"
+        onclick="mmGenerateImage()"
+        style="margin-left:auto;border:0;border-radius:12px;padding:13px 24px;background:linear-gradient(90deg,#8b00ff,#ff008c,#00d9ff);color:#fff;font-weight:bold;cursor:pointer;"
+      >
+        GERAR IMAGEM
+      </button>
+
+    </div>
+
+    <div id="mmImageStatus" style="display:none;margin-top:18px;padding:14px;border-radius:12px;background:#181824;"></div>
+
+    <div id="mmImageResult" style="margin-top:20px;text-align:center;"></div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+  const MM_IMAGE_COST = 10;
+  const MM_CREDITS_KEY = "manos_minas_credits";
+
+  function getCredits(){
+    let value = parseInt(localStorage.getItem(MM_CREDITS_KEY) || "100", 10);
+
+    if(isNaN(value) || value < 0){
+      value = 0;
+    }
+
+    localStorage.setItem(MM_CREDITS_KEY, value);
+    return value;
+  }
+
+  function updateCredits(){
+    const el = document.getElementById("mmCredits");
+
+    if(el){
+      el.textContent = getCredits();
+    }
+  }
+
+  window.mmOpenImage = function(){
+
+    const modal = document.getElementById("mmImageModal");
+
+    if(modal){
+
+      modal.style.display = "flex";
+
+      updateCredits();
+
+      setTimeout(function(){
+
+        const input = document.getElementById("mmImagePrompt");
+
+        if(input){
+          input.focus();
+        }
+
+      },100);
+
+    }
+
+  };
+
+  window.mmCloseImage = function(){
+
+    const modal = document.getElementById("mmImageModal");
+
+    if(modal){
+      modal.style.display = "none";
+    }
+
+  };
+
+  window.mmGenerateImage = async function(){
+
+    const prompt = document.getElementById("mmImagePrompt").value.trim();
+    const style = document.getElementById("mmImageStyle").value;
+    const status = document.getElementById("mmImageStatus");
+    const result = document.getElementById("mmImageResult");
+    const button = document.getElementById("mmGenerateImageBtn");
+
+    if(!prompt){
+
+      status.style.display = "block";
+      status.textContent = "Digite o que vocÃª quer criar.";
+
+      return;
+    }
+
+    let credits = getCredits();
+
+    if(credits < MM_IMAGE_COST){
+
+      status.style.display = "block";
+      status.textContent = "VocÃª precisa de 10 crÃ©ditos para gerar uma imagem.";
+
+      return;
+    }
+
+    status.style.display = "block";
+    status.textContent = "Gerando sua imagem...";
+
+    result.innerHTML = "";
+
+    button.disabled = true;
+    button.style.opacity = ".5";
+
+    try{
+
+      const response = await fetch("/api/image/generate", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          prompt: prompt,
+          style: style,
+          credits: MM_IMAGE_COST
+
+        })
+
+      });
+
+      const data = await response.json();
+
+      if(!response.ok){
+
+        throw new Error(
+          data.detail || "NÃ£o foi possÃ­vel gerar a imagem."
+        );
+
+      }
+
+      if(!data.image_url){
+
+        throw new Error(
+          "O servidor nÃ£o retornou a imagem."
+        );
+
+      }
+
+      localStorage.setItem(
+        MM_CREDITS_KEY,
+        String(credits - MM_IMAGE_COST)
+      );
+
+      updateCredits();
+
+      result.innerHTML =
+        '<img src="' + data.image_url + '" style="max-width:100%;border-radius:16px;">' +
+        '<div style="margin-top:12px;opacity:.7;">10 crÃ©ditos utilizados</div>';
+
+      status.textContent = "Imagem criada com sucesso.";
+
+    }catch(error){
+
+      status.textContent = error.message;
+
+    }finally{
+
+      button.disabled = false;
+      button.style.opacity = "1";
+
+    }
+
+  };
+
+  document.addEventListener("keydown", function(event){
+
+    if(event.key === "Escape"){
+      window.mmCloseImage();
+    }
+
+  });
+
+  updateCredits();
+
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
